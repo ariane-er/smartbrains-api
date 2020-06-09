@@ -1,7 +1,11 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const lodash = require("lodash");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const database = {
     users: [
@@ -21,6 +25,14 @@ const database = {
             entries: 0,
             joined: new Date() 
         }
+    ],
+    
+    login: [
+        {
+            id: "987",
+            hash: "",
+            email: "john@gmail.com"
+        }
     ]
 };
 
@@ -29,9 +41,10 @@ app.get("/", (req, res) => {
 });
 
 app.post("/signin", (req, res) => {
+
     if (req.body.email === database.users[0].email &&
         req.body.password === database.users[0].password) {
-            res.json("success");
+            res.json(database.users[0]);
         } else {
             res.status(400).json("error logging in");
         }
@@ -43,6 +56,9 @@ app.post("/register", (req, res) => {
     //Create a new user
     //Destructure the request
     const { email, name, password } = req.body;
+
+
+
     const newUser = {id: "125",
                         name: name,
                         email: email,
@@ -53,8 +69,12 @@ app.post("/register", (req, res) => {
 
     database.users.push(newUser);
 
+    //remove pw from what we return as a response    
+    const newUserNoPw = lodash.omit(newUser, ["password"]);
+
+
     //we have to send a response so the req is closed
-    res.json(newUser);
+    res.json(newUserNoPw);
 
 });
 
